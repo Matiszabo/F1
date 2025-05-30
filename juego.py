@@ -53,6 +53,8 @@ obstaculo_imagenes = [
 def auto(x, y):
     pantalla.blit(ferrari, (x, y))
 
+
+
 # Dibuja el fondo: pista y bordes
 def fondo():
     pantalla.blit(borde1, (0, 0))        # Borde izquierdo
@@ -87,13 +89,27 @@ def reiniciar_juego():
     obstaculoY = -155
     obstaculoX = random.randrange(175, 625)
     obstaculo = random.randint(0, 8)
-    return x, y, coordenadaX, obstaculoX, obstaculoY, obstaculo
+    auto_pasado = 0
+    puntaje = 0
+    nivel = 0
+    return x, y, coordenadaX, obstaculoX, obstaculoY, obstaculo, auto_pasado, puntaje, nivel
+    
+
+# muestra de puntaje 
+def tabla_puntaje(pasado, puntaje):
+    fuente = pygame.font.SysFont(None,35)
+    pasado = fuente.render("Passed: " + str(pasado), True, (255,255,255))
+    puntaje = fuente.render("Puntaje: " + str(puntaje), True, (24,94,255))
+    pantalla.blit(pasado, (0,50))
+    pantalla.blit(puntaje, (0,100))
+
 
 # Bucle principal del juego
 def juego():
-    coordenadaX = 0  # Movimiento horizontal
-    x = 400  # Posición inicial del auto en X
-    y = 450  # Posición inicial del auto en Y
+    x, y, coordenadaX, obstaculoX, obstaculoY, obstaculo, auto_pasado, puntaje, nivel = reiniciar_juego()
+    velocidadObstaculo = 10
+    jugando = True
+
 
     # Obstáculo
     velocidadObstaculo = 10  # Velocidad del obstáculo
@@ -102,6 +118,10 @@ def juego():
     obstaculoY = -155  # Empieza fuera de pantalla
     obstaculo_ancho = 56
     obstaculo_alto = 155
+    auto_pasado = 0
+    puntaje = 0
+    nivel = 0 
+
 
     jugando = True
 
@@ -115,6 +135,10 @@ def juego():
                     coordenadaX = -5
                 if event.key == pygame.K_RIGHT:
                     coordenadaX = 5
+                if event.key == pygame.K_s:
+                    velocidadObstaculo += 2  
+                if event.key == pygame.K_b:
+                    velocidadObstaculo -= 2 
 
             if event.type == pygame.KEYUP: # Detecta teclas soltadas
                 if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
@@ -133,8 +157,22 @@ def juego():
             obstaculoY = -155
             obstaculoX = random.randrange(175, 625)
             obstaculo = random.randint(0, 8)
+            auto_pasado += 1
+            puntaje = auto_pasado * 10
+            if int(auto_pasado) % 10 == 0:
+                nivel += 1 
+                velocidadObstaculo += 2
+                fuente = pygame.font.SysFont(None, 50)
+                nivel_texto = fuente.render("Nivel: " + str(nivel), 1, (85, 255, 43))
+                pantalla.blit(nivel_texto, (100, 200))
+                pygame.display.update()
+                time.sleep(3)
+                
 
         auto(x, y)  # Dibuja el auto
+
+        # Poniendo el puntaje en la pantalla 
+        tabla_puntaje(auto_pasado, puntaje)
 
         # Detecta colisiones entre auto y obstáculo
         rect_auto = pygame.Rect(x, y, ferrari_ancho, 155) #Posicion y tamaño del auto
@@ -142,13 +180,13 @@ def juego():
 
         if rect_auto.colliderect(rect_obstaculo): # Si hay colisión
             mostrar_mensaje_choque()
-            x, y, coordenadaX, obstaculoX, obstaculoY, obstaculo = reiniciar_juego()
-
+            x, y, coordenadaX, obstaculoX, obstaculoY, obstaculo, auto_pasado, puntaje, nivel = reiniciar_juego()
+            velocidadObstaculo = 10 
         # Si el auto se sale de los límites de la pista
         if x > 660 - ferrari_ancho or x < 150:
             mostrar_mensaje_choque()
-            x, y, coordenadaX, obstaculoX, obstaculoY, obstaculo = reiniciar_juego()
-
+            x, y, coordenadaX, obstaculoX, obstaculoY, obstaculo, auto_pasado, puntaje, nivel = reiniciar_juego()
+            velocidadObstaculo = 10 
         pygame.display.update()
         reloj.tick(60)  # 60 FPS para mejor rendimiento
 
